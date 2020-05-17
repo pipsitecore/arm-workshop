@@ -6,7 +6,7 @@
     "variables": {},
     "resources": [
         {
-            "name": "PVITestStorageAccount",
+            "name": "pviteststorageaccount",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "tags": {
