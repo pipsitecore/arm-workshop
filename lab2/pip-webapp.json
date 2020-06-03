@@ -2,65 +2,25 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "subscriptionId": {
-            "type": "string"
-        },
-        "name": {
-            "type": "string"
-        },
-        "location": {
-            "type": "string"
-        },
-        "hostingEnvironment": {
-            "type": "string"
-        },
-        "hostingPlanName": {
-            "type": "string"
-        },
-        "serverFarmResourceGroup": {
-            "type": "string"
-        },
-        "alwaysOn": {
-            "type": "bool"
-        },
-        "sku": {
-            "type": "string"
-        },
-        "skuCode": {
-            "type": "string"
-        },
-        "workerSize": {
-            "type": "string"
-        },
-        "workerSizeId": {
-            "type": "string"
-        },
-        "numberOfWorkers": {
-            "type": "string"
-        },
-        "currentStack": {
-            "type": "string"
-        },
-        "phpVersion": {
-            "type": "string"
-        },
-        "errorLink": {
+        "WebAppName": {
             "type": "string"
         }
+    },
+    "variables": {
+        "WebAppPlan": "[concat(parameters('WebAppName'), '-plan')]",
+        "WebAppPlanID": "[resourceId('Microsoft.Web/serverfarms',variables('WebAppPlan'))]"
     },
     "resources": [
         {
             "apiVersion": "2018-11-01",
-            "name": "[parameters('name')]",
+            "name": "[parameters('WebAppName')]",
             "type": "Microsoft.Web/sites",
-            "location": "[parameters('location')]",
-            "tags": {},
+            "location": "[resourceGroup().location]",
             "dependsOn": [
-                "microsoft.insights/components/pip-webapp",
-                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
-            ],
+                "[variables('WebAppPlan')]"
+                ],
             "properties": {
-                "name": "[parameters('name')]",
+                "name": "[parameters('WebAppName')]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -78,44 +38,27 @@
                         {
                             "name": "XDT_MicrosoftApplicationInsights_Mode",
                             "value": "default"
-                        },
-                        {
-                            "name": "ANCM_ADDITIONAL_ERROR_PAGE_LINK",
-                            "value": "[parameters('errorLink')]"
                         }
-                    ],
-                    "metadata": [
-                        {
-                            "name": "CURRENT_STACK",
-                            "value": "[parameters('currentStack')]"
-                        }
-                    ],
-                    "phpVersion": "[parameters('phpVersion')]",
-                    "alwaysOn": "[parameters('alwaysOn')]"
+                    ]
                 },
-                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]",
-                "clientAffinityEnabled": true
+                "serverFarmId": "[variables('WebAppPlanID')]",
+                "hostingEnvironment": ""
             }
         },
         {
             "apiVersion": "2018-02-01",
-            "name": "[parameters('hostingPlanName')]",
+            "name": "[variables('WebAppPlan')]",
             "type": "Microsoft.Web/serverfarms",
-            "location": "[parameters('location')]",
-            "kind": "",
-            "tags": {},
-            "dependsOn": [],
+            "location": "[resourceGroup().location]",
             "properties": {
-                "name": "[parameters('hostingPlanName')]",
-                "workerSize": "[parameters('workerSize')]",
-                "workerSizeId": "[parameters('workerSizeId')]",
-                "numberOfWorkers": "[parameters('numberOfWorkers')]",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+                "name": "[variables('WebAppPlan')]",
+                "workerSizeId": "0",
+                "numberOfWorkers": "1",
+                "reserved": false
             },
             "sku": {
-                "Tier": "[parameters('sku')]",
-                "Name": "[parameters('skuCode')]"
+                "Tier": "Free",
+                "Name": "F1"
             }
         },
         {
@@ -126,7 +69,7 @@
             "location": "westeurope",
             "tags": {},
             "properties": {
-                "ApplicationId": "[parameters('name')]",
+                "ApplicationId": "[variables('WebAppPlan')]",
                 "Application_Type": "web",
                 "Request_Source": "rest"
             }
